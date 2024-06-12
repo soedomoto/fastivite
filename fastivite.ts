@@ -1,7 +1,5 @@
 #! /usr/bin/env tsx
 
-import { FastifyInstance } from 'fastify';
-
 (async () => {
   const FastifyCors = await import('@fastify/cors');
   const FastifyMiddie = await import('@fastify/middie');
