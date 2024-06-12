@@ -1,6 +1,6 @@
 {
   "name": "fastivite",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Soedomoto <soedomoto@gmail.com>",
   "description": "",
   "bin": {
@@ -8,10 +8,8 @@
   },
   "keywords": [],
   "license": "ISC",
-  "dependencies": {
-    "commander": "^12.1.0"
-  },
   "peerDependencies": {
+    "commander": "^12.1.0",
     "@fastify/cors": "^9.0.1",
     "@fastify/middie": "^8.3.1",
     "@fastify/restartable": "^2.3.0",
@@ -23,9 +21,15 @@
     "vite": "^5.2.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.2",
-    "chokidar": "^3.6.0",
-    "esbuild": "^0.21.5",
-    "glob": "^10.4.1"
+    "commander": "^12.1.0",
+    "@fastify/cors": "^9.0.1",
+    "@fastify/middie": "^8.3.1",
+    "@fastify/restartable": "^2.3.0",
+    "fastify": "^4.27.0",
+    "fastify-print-routes": "^3.2.0",
+    "lodash": "^4.17.21",
+    "sirv": "^2.0.4",
+    "tsx": "^4.15.2",
+    "vite": "^5.2.0"
   }
 }
