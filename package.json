@@ -1,6 +1,6 @@
 {
   "name": "fastivite",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": "Soedomoto <soedomoto@gmail.com>",
   "description": "Create monolithic app made easy by using combination of fastify and vite",
   "type": "module",
@@ -32,6 +32,7 @@
     "@types/node": "^20.14.2",
     "chokidar": "^3.6.0",
     "concurrently": "^8.2.2",
+    "esbuild": "^0.21.5",
     "fastify": "^4.27.0",
     "fastify-print-routes": "^3.2.0",
     "glob": "^10.4.1",
@@ -39,10 +40,7 @@
     "sirv": "^2.0.4",
     "ts-node": "^10.9.2",
     "tsx": "^4.15.2",
-    "typescript": "^5.2.2"
-  },
-  "peerDependencies": {
-    "esbuild": "^0.21.5",
+    "typescript": "^5.2.2",
     "vite": "^5.2.0"
   },
   "dependencies": {
