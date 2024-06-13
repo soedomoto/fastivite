@@ -12,6 +12,13 @@ try {
   _filename = __filename;
 }
 
+/** @type {import('..').BuildVite} */
+const _buildVite = async ({ outDir, entryServer }) => {
+  await build({ build: { manifest: true, outDir: `${outDir}/client` } });
+  await build({ build: { ssr: entryServer, outDir: `${outDir}/server` } });
+};
+
+/** @type {import('..').BuildServer} */
 const _buildServer = async ({
   outDir,
   entryServer,
@@ -19,8 +26,7 @@ const _buildServer = async ({
   apiFilePattern,
 }) => {
   // Build vite app
-  await build({ build: { manifest: true, outDir: `${outDir}/client` } });
-  await build({ build: { ssr: entryServer, outDir: `${outDir}/server` } });
+  await _buildVite({ outDir, entryServer });
 
   // Scan apis file
   let apiPaths = globSync(apiFilePattern, { cwd: apiCwd });
@@ -82,5 +88,5 @@ const _buildServer = async ({
 };
 
 export const buildServer = _buildServer;
-export default { buildServer: _buildServer };
-// exports.buildServer = _buildServer;
+export const buildVite = _buildVite;
+export default { buildServer: _buildServer, buildVite: _buildVite };

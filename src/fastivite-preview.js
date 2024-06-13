@@ -6,4 +6,3 @@ const _previewServer = async ({ cwd, serverFile }) => {
 
 export const previewServer = _previewServer;
 export default { previewServer: _previewServer };
-// exports.previewServer = _previewServer;
