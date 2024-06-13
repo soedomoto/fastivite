@@ -9,7 +9,20 @@ import _ from 'lodash';
 import { join } from 'path';
 import { createServer } from 'vite';
 
-const _createDevServer = async ({
+export type CreateDevServerParams = {
+  host?: string | undefined
+  port: number
+  base?: string | undefined
+  index: string
+  entryServer: string
+  configFile?: string | undefined
+  apiEnabled?: boolean | undefined
+  apiCwd: string
+  apiFilePattern: string | string[]
+  middleware?: boolean
+}
+
+export const createDevServer = async ({
   host,
   port,
   base,
@@ -20,7 +33,7 @@ const _createDevServer = async ({
   apiCwd,
   apiFilePattern,
   middleware = false,
-}) => {
+}: CreateDevServerParams) => {
   // Serve vite dev server
   let vite = await createServer({
     server: { middlewareMode: true },
@@ -101,13 +114,9 @@ const _createDevServer = async ({
   );
 
   if (!middleware) {
-    let address = await server.listen({ host: host, port: parseInt(port) });
+    let address = await server.listen({ host: host, port: port });
     console.log('Fastivite dev server is listening at', address);
   }
 
   return server;
 };
-
-export const createDevServer = _createDevServer;
-export default { createDevServer: _createDevServer };
-// exports.createDevServer = _createDevServer;

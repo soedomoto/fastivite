@@ -1,9 +1,9 @@
-#! /usr/bin/env tsx
+#! /usr/bin/env node
 
-import { buildServer } from './src/fastivite-build.js';
-import { createDevServer } from './src/fastivite-dev.js';
-import { previewServer } from './src/fastivite-preview.js';
 import { program } from 'commander';
+import { createDevServer } from './dev.js';
+import { buildServer } from './build.js';
+import { previewServer } from './preview.js';
 
 (async () => {
   program
@@ -34,7 +34,9 @@ import { program } from 'commander';
       ['**/api.ts', '**/api/index.ts']
     )
     .option('--build-dir <build-dir>', 'Build directory', 'build')
-    .action(createDevServer);
+    .action((params) => {
+      createDevServer(params)
+    });
 
   program
     .command('build')

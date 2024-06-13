@@ -5,6 +5,16 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { build } from 'vite';
 
+export type BuildViteParams = {
+  outDir: string | undefined
+  entryServer: string | undefined
+}
+
+export type BuildServerParams = BuildViteParams & {
+  apiCwd: string
+  apiFilePattern: string | string[]
+}
+
 let _filename = '';
 try {
   _filename = fileURLToPath(import.meta.url);
@@ -12,21 +22,21 @@ try {
   _filename = __filename;
 }
 
-/** @type {import('..').BuildVite} */
-const _buildVite = async ({ outDir, entryServer }) => {
+
+export const buildVite = async ({ outDir, entryServer }: BuildViteParams) => {
   await build({ build: { manifest: true, outDir: `${outDir}/client` } });
   await build({ build: { ssr: entryServer, outDir: `${outDir}/server` } });
 };
 
-/** @type {import('..').BuildServer} */
-const _buildServer = async ({
+
+export const buildServer = async ({
   outDir,
   entryServer,
   apiCwd,
   apiFilePattern,
-}) => {
+}: BuildServerParams) => {
   // Build vite app
-  await _buildVite({ outDir, entryServer });
+  await buildVite({ outDir, entryServer });
 
   // Scan apis file
   let apiPaths = globSync(apiFilePattern, { cwd: apiCwd });
@@ -86,7 +96,3 @@ const _buildServer = async ({
   rmSync(`${outDir}/server`, { recursive: true, force: true });
   rmSync(`${outDir}/apis`, { recursive: true, force: true });
 };
-
-export const buildServer = _buildServer;
-export const buildVite = _buildVite;
-export default { buildServer: _buildServer, buildVite: _buildVite };
