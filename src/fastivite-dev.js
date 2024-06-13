@@ -16,6 +16,7 @@ const _createDevServer = async ({
   index,
   entryServer,
   configFile,
+  apiEnabled = false,
   apiCwd,
   apiFilePattern,
   middleware = false,
@@ -63,31 +64,35 @@ const _createDevServer = async ({
         }
       });
 
-      let apiPaths = globSync(apiFilePattern, { cwd: apiCwd });
-      for (let apiPath of apiPaths) {
-        let apiFile = join(apiCwd, apiPath);
-        let apiJsPath = apiPath.replace('ts', 'js');
-        let apiJsFile = join(tmpBuildDir, apiJsPath);
-        await esbuild({
-          format: 'esm',
-          platform: 'node',
-          entryPoints: [apiFile],
-          outfile: apiJsFile,
-        });
+      if (!!apiEnabled) {
+        let apiPaths = globSync(apiFilePattern, { cwd: apiCwd });
+        for (let apiPath of apiPaths) {
+          let apiFile = join(apiCwd, apiPath);
+          let apiJsPath = apiPath.replace('ts', 'js');
+          let apiJsFile = join(tmpBuildDir, apiJsPath);
+          await esbuild({
+            format: 'esm',
+            platform: 'node',
+            entryPoints: [apiFile],
+            outfile: apiJsFile,
+          });
 
-        let fn = await import(apiJsFile);
-        let path = [
-          '',
-          'api',
-          ...apiPath
-            .split('/')
-            .filter(
-              (p) =>
-                !['api.ts', 'api.js', 'api', 'index.ts', 'index.js'].includes(p)
-            )
-            .filter((p) => !!p),
-        ].join('/');
-        server.register(fn?.default, { path });
+          let fn = await import(apiJsFile);
+          let path = [
+            '',
+            'api',
+            ...apiPath
+              .split('/')
+              .filter(
+                (p) =>
+                  !['api.ts', 'api.js', 'api', 'index.ts', 'index.js'].includes(
+                    p
+                  )
+              )
+              .filter((p) => !!p),
+          ].join('/');
+          server.register(fn?.default, { path });
+        }
       }
 
       return server;

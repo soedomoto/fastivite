@@ -8,6 +8,7 @@ export type CreateDevServerParams = {
     index?: string | undefined
     entryServer?: string | undefined
     configFile?: string | undefined
+    apiEnabled?: boolean | undefined
     apiCwd?: string | undefined
     apiFilePattern?: string[] | undefined
     middleware?: boolean
