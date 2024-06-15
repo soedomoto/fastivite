@@ -2,6 +2,7 @@ import FastifyCors from '@fastify/cors';
 import FastifyMiddie from '@fastify/middie';
 import { restartable } from '@fastify/restartable';
 import { build as esbuild } from 'esbuild';
+import { FastifyInstance } from 'fastify';
 import FastifyListRoutes from 'fastify-print-routes';
 import { readFileSync } from 'fs';
 import { globSync } from 'glob';
@@ -9,22 +10,67 @@ import _ from 'lodash';
 import { join } from 'path';
 import { createServer } from 'vite';
 
-export type CreateDevServerParams = {
-  host?: string | undefined
-  port: number
+export type CreateViteMiddlewareOptions = {
   base?: string | undefined
   index: string
   entryServer: string
   configFile?: string | undefined
+}
+
+export type CreateDevServerParams = CreateViteMiddlewareOptions & {
+  host?: string | undefined
+  port: number
   apiEnabled?: boolean | undefined
   apiCwd: string
   apiFilePattern: string | string[]
   middleware?: boolean
+  registerVite?:boolean
+}
+
+export const createViteMiddleware = async (server: FastifyInstance, options: CreateViteMiddlewareOptions) => {
+  // Serve vite dev server
+  let vite = await createServer({
+    server: { middlewareMode: true },
+    appType: 'custom',
+    base: options?.base,
+    configFile: options?.configFile,
+  });
+
+  server.use(vite.middlewares);
+  server.get('*', async (req, res) => {
+    try {
+      const url = _.trimEnd(_.trimStart(req.originalUrl, options?.base), '/');
+
+      let template = readFileSync(options?.index, 'utf-8');
+      template = await vite.transformIndexHtml(url, template);
+      let render = (await vite.ssrLoadModule(options?.entryServer)).render;
+
+      const rendered = await render({ url });
+
+      const html = template
+        .replace(`<!--app-head-->`, rendered.head ?? '')
+        .replace(`<!--app-html-->`, `
+          ${rendered.html ?? ''}
+          <script type="text/javascript">
+            window.VITE_BASE_URL = '${req.protocol}://${req.hostname}';
+          </script>
+        `);
+
+      res.code(200).type('text/html').send(html);
+    } catch (e) {
+      if (e instanceof Error) {
+        vite?.ssrFixStacktrace(e);
+        console.log(e.stack);
+        res.code(500).send(e.stack);
+      }
+    }
+  });
 }
 
 export const createDevServer = async ({
   host,
   port,
+  registerVite = true,
   base,
   index,
   entryServer,
@@ -34,14 +80,6 @@ export const createDevServer = async ({
   apiFilePattern,
   middleware = false,
 }: CreateDevServerParams) => {
-  // Serve vite dev server
-  let vite = await createServer({
-    server: { middlewareMode: true },
-    appType: 'custom',
-    base,
-    configFile,
-  });
-
   // Api scanner and watcher
   let tmpBuildDir = join(process.cwd(), 'dist', '.apis');
   let server = await restartable(
@@ -51,31 +89,7 @@ export const createDevServer = async ({
       await server.register(FastifyListRoutes, { colors: true });
       await server.register(FastifyMiddie);
       await server.register(FastifyCors, { origin: '*', methods: '*' });
-      server.use(vite.middlewares);
-
-      server.get('*', async (req, res) => {
-        try {
-          const url = _.trimEnd(_.trimStart(req.originalUrl, base), '/');
-
-          let template = readFileSync(index, 'utf-8');
-          template = await vite.transformIndexHtml(url, template);
-          let render = (await vite.ssrLoadModule(entryServer)).render;
-
-          const rendered = await render({ url });
-
-          const html = template
-            .replace(`<!--app-head-->`, rendered.head ?? '')
-            .replace(`<!--app-html-->`, rendered.html ?? '');
-
-          res.code(200).type('text/html').send(html);
-        } catch (e) {
-          if (e instanceof Error) {
-            vite?.ssrFixStacktrace(e);
-            console.log(e.stack);
-            res.code(500).send(e.stack);
-          }
-        }
-      });
+      if (registerVite) await server.register(createViteMiddleware, { base, index, entryServer, configFile });
 
       if (!!apiEnabled) {
         let apiPaths = globSync(apiFilePattern, { cwd: apiCwd });

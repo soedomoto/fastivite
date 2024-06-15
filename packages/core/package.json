@@ -1,0 +1,58 @@
+{
+  "name": "@fastivite/core",
+  "version": "1.0.15",
+  "author": "Soedomoto <soedomoto@gmail.com>",
+  "description": "Create monolithic app made easy by using combination of fastify and vite",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "fastivite": "./dist/cli.js"
+  },
+  "scripts": {
+    "fastivite": "./dist/cli.js",
+    "dev": "swc --strip-leading-paths --delete-dir-on-start -s -w -d dist src",
+    "build": "swc --strip-leading-paths --delete-dir-on-start -d dist src",
+    "postbuild": "concurrently npm:typecheck",
+    "format": "prettier -w src test",
+    "lint": "eslint --cache --ext .js,.jsx,.ts,.tsx src test",
+    "typecheck": "tsc -p . --emitDeclarationOnly",
+    "test": "c8 -c test/config/c8-local.json node --import tsx --test test/*.test.ts",
+    "test:ci": "c8 -c test/config/c8-ci.json node --import tsx --test-reporter=tap --test test/*.test.ts",
+    "ci": "npm run build && npm run test:ci",
+    "prepublishOnly": "npm run ci",
+    "postpublish": "git push origin && git push origin -f --tags"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "devDependencies": {
+    "@cowtech/eslint-config": "^9.0.3",
+    "@swc/cli": "^0.3.12",
+    "@types/glob": "^8.1.0",
+    "@types/lodash": "^4.17.5",
+    "@types/node": "^20.14.2",
+    "concurrently": "^8.2.2",
+    "sirv": "^2.0.4",
+    "tsx": "^4.15.4",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.0"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@fastify/middie": "^8.3.1",
+    "@fastify/restartable": "^2.3.0",
+    "commander": "^12.1.0",
+    "esbuild": "^0.21.5",
+    "fastify": "^4.27.0",
+    "fastify-print-routes": "^3.2.0",
+    "glob": "^10.4.1",
+    "lodash": "^4.17.21"
+  },
+  "peerDependencies": {
+    "vite": "^5.2.0"
+  }
+}
