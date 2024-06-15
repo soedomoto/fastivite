@@ -43,7 +43,6 @@ jobs:
         uses: JS-DevTools/npm-publish@v3
         with:
           package: 'packages/core/package.json'
-          registry: 'https://npm.pkg.github.com'
           token: ${{ secrets.NPM_TOKEN }}
           access: 'public'
           provenance: true
