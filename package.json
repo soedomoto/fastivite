@@ -5,6 +5,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "workspaces": [
     "packages/core",
     "packages/graphql"
