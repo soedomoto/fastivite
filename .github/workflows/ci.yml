@@ -43,6 +43,11 @@ jobs:
         uses: JS-DevTools/npm-publish@v3
         with:
           package: 'packages/core/package.json'
+          registry: 'https://npm.pkg.github.com'
           token: ${{ secrets.NPM_TOKEN }}
           access: 'public'
           provenance: true
+        env:
+          NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
