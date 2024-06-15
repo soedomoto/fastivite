@@ -39,6 +39,8 @@ jobs:
           pnpm build
 
       - name: Publish NPM
-        run: npm publish --access public
+        run: |
+          cd packages/core && npm publish --access public
+          cd packages/graphql && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
