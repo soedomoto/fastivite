@@ -41,7 +41,6 @@ jobs:
 
       - name: Publish NPM
         run: |
-          cd packages/core && npm publish --provenance --access public
-          cd packages/graphql && npm publish --provenance --access public
+          cd packages/core && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
