@@ -39,13 +39,13 @@ jobs:
         run: |
           pnpm build
 
-      - name: Push to Github
+      - name: Push to NPM
         uses: JS-DevTools/npm-publish@v3
         with:
           package: 'packages/core/package.json'
           token: ${{ secrets.NPM_TOKEN }}
           access: 'public'
-          provenance: true
+          provenance: false
         env:
           NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
