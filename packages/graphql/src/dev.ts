@@ -66,35 +66,93 @@ export const createGraphqlDevServer = async ({
     watchOptions: { enabled: graphqlCodegen },
   };
 
+  // let tmpBuild = './build';
+  // mkdirSync(tmpBuild, { recursive: true });
+
+  // let resolverPaths = globSync(graphqlResolverPattern, { cwd: graphqlResolverCwd })
+  //   .map(resolverPath => join(graphqlResolverCwd, resolverPath))
+  //   .map(resolverPath => resolverPath.replace('.js', '').replace('.ts', ''));
+
+  // writeFileSync(
+  //   join(tmpBuild, 'resolvers.json'),
+  //   JSON.stringify(resolverPaths)
+  // );
+
+  // resolverPaths = (await import(join('./', tmpBuild, 'resolvers.json')))?.default || [];
+
+  // let resolvers = {};
+  // for (let resolverPath of resolverPaths) {
+  //   let resolver = null;
+  //   try {
+  //     resolver = await import(`${resolverPath}.ts`);
+  //   } catch (err) {
+  //     try {
+  //       resolver = await import(`${resolverPath}.js`);
+  //     } catch (err) {}
+  //   }
+  //   if (resolver) resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
+  // }
+
+  // == Resolver
   let resolvers = {};
   let resolverPaths = globSync(graphqlResolverPattern, {
     cwd: graphqlResolverCwd,
-  });
+  })
+    .map(resolverPath => join(graphqlResolverCwd, resolverPath))
+    .map(resolverPath => resolverPath.replace('.js', '').replace('.ts', ''));
+
   for (let resolverPath of resolverPaths) {
-    let resolverFile = join(graphqlResolverCwd, resolverPath);
-    let resolver = await import(resolverFile);
-    resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
+    let resolver = null;
+    try {
+      resolver = await import(`${resolverPath}.ts`);
+    } catch (err) {
+      try {
+        resolver = await import(`${resolverPath}.js`);
+      } catch (err) { }
+    }
+    if (resolver) resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
   }
 
+  // == Loader
   let loaders = {};
   let loaderPaths = globSync(graphqlLoaderPattern, {
     cwd: graphqlLoaderCwd,
-  });
+  })
+    .map(loaderPath => join(graphqlLoaderCwd, loaderPath))
+    .map(loaderPath => loaderPath.replace('.js', '').replace('.ts', ''));
+
   for (let loaderPath of loaderPaths) {
-    let loaderFile = join(graphqlLoaderCwd, loaderPath);
-    let loader = await import(loaderFile);
-    loaders = _.defaultsDeep(loaders, loader?.default || {});
+    let loader = null;
+    try {
+      loader = await import(`${loaderPath}.ts`);
+    } catch (err) {
+      try {
+        loader = await import(`${loaderPath}.js`);
+      } catch (err) { }
+    }
+    if (loader) loaders = _.defaultsDeep(loaders, loader?.default || {});
   }
 
+  // == Context
   let contextPaths = globSync(graphqlContextPattern, {
     cwd: graphqlContextCwd,
-  });
+  })
+    .map(contextPath => join(graphqlContextCwd, contextPath))
+    .map(contextPath => contextPath.replace('.js', '').replace('.ts', ''));
+
   let contexts = await Promise.all(
     contextPaths.map(async (contextPath) => {
-      let contextFile = join(graphqlContextCwd, contextPath);
-      let ctx = await import(contextFile);
-      return ctx?.default;
-    })
+      let context = null;
+      try {
+        context = await import(`${contextPath}.ts`);
+      } catch (err) {
+        try {
+          context = await import(`${contextPath}.js`);
+        } catch (err) { }
+      }
+      if (context) return context?.default;
+      return null;
+    }).filter(context => !!context)
   );
 
   let context = async (req: FastifyRequest, rep: FastifyReply) => {
