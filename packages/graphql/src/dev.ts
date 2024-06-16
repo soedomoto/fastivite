@@ -47,6 +47,12 @@ export const createGraphqlDevServer = async ({
   graphqlCodegenOut,
   middleware = false,
 }: CreateGraphqlDevServerParams) => {
+  apiCwd = join(process.cwd(), apiCwd);
+  graphqlSchemaCwd = join(process.cwd(), graphqlSchemaCwd);
+  graphqlResolverCwd = join(process.cwd(), graphqlResolverCwd);
+  graphqlLoaderCwd = join(process.cwd(), graphqlLoaderCwd);
+  graphqlContextCwd = join(process.cwd(), graphqlContextCwd);
+
   let server = await createDevServer({
     host,
     port,
@@ -65,33 +71,6 @@ export const createGraphqlDevServer = async ({
     targetPath: graphqlCodegenOut,
     watchOptions: { enabled: graphqlCodegen },
   };
-
-  // let tmpBuild = './build';
-  // mkdirSync(tmpBuild, { recursive: true });
-
-  // let resolverPaths = globSync(graphqlResolverPattern, { cwd: graphqlResolverCwd })
-  //   .map(resolverPath => join(graphqlResolverCwd, resolverPath))
-  //   .map(resolverPath => resolverPath.replace('.js', '').replace('.ts', ''));
-
-  // writeFileSync(
-  //   join(tmpBuild, 'resolvers.json'),
-  //   JSON.stringify(resolverPaths)
-  // );
-
-  // resolverPaths = (await import(join('./', tmpBuild, 'resolvers.json')))?.default || [];
-
-  // let resolvers = {};
-  // for (let resolverPath of resolverPaths) {
-  //   let resolver = null;
-  //   try {
-  //     resolver = await import(`${resolverPath}.ts`);
-  //   } catch (err) {
-  //     try {
-  //       resolver = await import(`${resolverPath}.js`);
-  //     } catch (err) {}
-  //   }
-  //   if (resolver) resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
-  // }
 
   // == Resolver
   let resolvers = {};
