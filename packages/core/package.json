@@ -1,13 +1,9 @@
 {
   "name": "@fastivite/core",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "author": "Soedomoto <soedomoto@gmail.com>",
   "description": "Create monolithic app made easy by using combination of fastify and vite",
   "type": "module",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
-  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

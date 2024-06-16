@@ -39,6 +39,7 @@ jobs:
         run: |
           pnpm build
 
+      ## core
       - name: Publish Core to NPM
         uses: JS-DevTools/npm-publish@v3
         with:
@@ -51,7 +52,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
           
-      - name: Publish Core to NPM
+      ## graphql
+      - name: Publish GraphQL to NPM
         uses: JS-DevTools/npm-publish@v3
         with:
           package: 'packages/graphql/package.json'
