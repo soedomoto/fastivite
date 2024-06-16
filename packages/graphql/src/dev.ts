@@ -1,28 +1,27 @@
-import { runCli } from '@graphql-codegen/cli';
 import { createDevServer, CreateDevServerParams } from '@fastivite/core';
+import { generate, loadContext } from '@graphql-codegen/cli';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { globSync } from 'glob';
 import { buildSchema } from 'graphql';
 import _ from 'lodash';
 import mercurius from 'mercurius';
 import { codegenMercurius, loadSchemaFiles } from 'mercurius-codegen';
 import { join } from 'path';
-import type { FastifyReply, FastifyRequest } from 'fastify';
 
 export type CreateGraphqlDevServerParams = CreateDevServerParams & {
-  graphqlSchemaCwd: string
-  graphqlSchemaPattern: string | string[]
-  graphqlResolverCwd: string
-  graphqlResolverPattern: string[] | undefined
-  graphqlLoaderCwd: string
-  graphqlLoaderPattern: string[] | undefined
-  graphqlContextCwd: string
-  graphqlContextPattern: string[] | undefined
-  graphqlCodegen: boolean
-  graphqlOperationCodegen: boolean
-  graphqlOperationCodegenConfigFile: string | undefined
-  graphqlCodegenOut: string
-}
-
+  graphqlSchemaCwd: string;
+  graphqlSchemaPattern: string | string[];
+  graphqlResolverCwd: string;
+  graphqlResolverPattern: string[] | undefined;
+  graphqlLoaderCwd: string;
+  graphqlLoaderPattern: string[] | undefined;
+  graphqlContextCwd: string;
+  graphqlContextPattern: string[] | undefined;
+  graphqlCodegen: boolean;
+  graphqlOperationCodegen: boolean;
+  graphqlOperationCodegenConfigFile: string | undefined;
+  graphqlCodegenOut: string;
+};
 
 export const createGraphqlDevServer = async ({
   host,
@@ -67,14 +66,13 @@ export const createGraphqlDevServer = async ({
     watchOptions: { enabled: graphqlCodegen },
   };
 
-  
   let resolvers = {};
   let resolverPaths = globSync(graphqlResolverPattern, {
     cwd: graphqlResolverCwd,
   });
   for (let resolverPath of resolverPaths) {
     let resolverFile = join(graphqlResolverCwd, resolverPath);
-    let resolver = await import(resolverFile)
+    let resolver = await import(resolverFile);
     resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
   }
 
@@ -84,18 +82,20 @@ export const createGraphqlDevServer = async ({
   });
   for (let loaderPath of loaderPaths) {
     let loaderFile = join(graphqlLoaderCwd, loaderPath);
-    let loader = await import(loaderFile)
+    let loader = await import(loaderFile);
     loaders = _.defaultsDeep(loaders, loader?.default || {});
   }
 
   let contextPaths = globSync(graphqlContextPattern, {
     cwd: graphqlContextCwd,
   });
-  let contexts = await Promise.all(contextPaths.map(async contextPath => {
-    let contextFile = join(graphqlContextCwd, contextPath);
-    let ctx = await import(contextFile)
-    return ctx?.default;
-  }))
+  let contexts = await Promise.all(
+    contextPaths.map(async (contextPath) => {
+      let contextFile = join(graphqlContextCwd, contextPath);
+      let ctx = await import(contextFile);
+      return ctx?.default;
+    })
+  );
 
   let context = async (req: FastifyRequest, rep: FastifyReply) => {
     let context = {};
@@ -103,14 +103,16 @@ export const createGraphqlDevServer = async ({
       if (ctx) context = _.defaultsDeep(context, await ctx(req, rep));
     }
     return context;
-  }
+  };
 
-  let graphqlSchemaPattern2: string[] = [];
-  if (typeof graphqlSchemaPattern == 'string') graphqlSchemaPattern2 = [...graphqlSchemaPattern2, graphqlSchemaPattern];
-  else graphqlSchemaPattern2 = [...graphqlSchemaPattern2, ...graphqlSchemaPattern];
+  let graphqlSchemaPatterns: string[] = [];
+  if (typeof graphqlSchemaPattern == 'string')
+    graphqlSchemaPatterns = [...graphqlSchemaPatterns, graphqlSchemaPattern];
+  else
+    graphqlSchemaPatterns = [...graphqlSchemaPatterns, ...graphqlSchemaPattern];
 
   let { schema } = loadSchemaFiles(
-    graphqlSchemaPattern2.map((p) => join(graphqlSchemaCwd, p)),
+    graphqlSchemaPatterns.map((p) => join(graphqlSchemaCwd, p)),
     {
       watchOptions: {
         enabled: true,
@@ -146,10 +148,17 @@ export const createGraphqlDevServer = async ({
 
   if (graphqlOperationCodegen) {
     try {
-      await runCli(
-        `--watch --verbose --debug ${graphqlOperationCodegenConfigFile ? `--config ${graphqlOperationCodegenConfigFile}` : ``}`
-      );
-    } catch (err) { }
+      const context = await loadContext(graphqlOperationCodegenConfigFile);
+      context.updateConfig({
+        watch: true,
+        verbose: true,
+        debug: true,
+      });
+
+      generate(context);
+    } catch (err) {
+      console.log(`WARNING: GraphQL operation codegen failed: ${err?.message}`);
+    }
   }
 
   return server;

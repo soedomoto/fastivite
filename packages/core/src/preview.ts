@@ -1,4 +1,4 @@
-import { fork } from 'child_process';
+import { fork } from 'child_process'
 
 export type PreviewServerParams = {
   cwd: string | undefined
@@ -6,5 +6,5 @@ export type PreviewServerParams = {
 }
 
 export const previewServer = async ({ cwd, serverFile }: PreviewServerParams) => {
-  fork(serverFile, { cwd });
-};
+  fork(serverFile, { cwd })
+}

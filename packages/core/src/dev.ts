@@ -1,14 +1,14 @@
-import FastifyCors from '@fastify/cors';
-import FastifyMiddie from '@fastify/middie';
-import { restartable } from '@fastify/restartable';
-import { build as esbuild } from 'esbuild';
-import { FastifyInstance } from 'fastify';
-import FastifyListRoutes from 'fastify-print-routes';
-import { readFileSync } from 'fs';
-import { globSync } from 'glob';
-import _ from 'lodash';
-import { join } from 'path';
-import { createServer } from 'vite';
+import FastifyCors from '@fastify/cors'
+import FastifyMiddie from '@fastify/middie'
+import { restartable } from '@fastify/restartable'
+import { build as esbuild } from 'esbuild'
+import { FastifyInstance } from 'fastify'
+import FastifyListRoutes from 'fastify-print-routes'
+import { readFileSync } from 'fs'
+import { globSync } from 'glob'
+import _ from 'lodash'
+import { join } from 'path'
+import { createServer } from 'vite'
 
 export type CreateViteMiddlewareOptions = {
   base?: string | undefined
@@ -24,7 +24,7 @@ export type CreateDevServerParams = CreateViteMiddlewareOptions & {
   apiCwd: string
   apiFilePattern: string | string[]
   middleware?: boolean
-  registerVite?:boolean
+  registerVite?: boolean
 }
 
 export const createViteMiddleware = async (server: FastifyInstance, options: CreateViteMiddlewareOptions) => {
@@ -33,38 +33,40 @@ export const createViteMiddleware = async (server: FastifyInstance, options: Cre
     server: { middlewareMode: true },
     appType: 'custom',
     base: options?.base,
-    configFile: options?.configFile,
-  });
+    configFile: options?.configFile
+  })
 
-  server.use(vite.middlewares);
+  server.use(vite.middlewares)
   server.get('*', async (req, res) => {
     try {
-      const url = _.trimEnd(_.trimStart(req.originalUrl, options?.base), '/');
+      const host = `${req.protocol}://${req.hostname}`
+      const url = _.trimEnd(_.trimStart(req.originalUrl, options?.base), '/')
 
-      let template = readFileSync(options?.index, 'utf-8');
-      template = await vite.transformIndexHtml(url, template);
-      let render = (await vite.ssrLoadModule(options?.entryServer)).render;
+      let template = readFileSync(options?.index, 'utf-8')
+      template = await vite.transformIndexHtml(url, template)
+      let render = (await vite.ssrLoadModule(options?.entryServer)).render
 
-      const rendered = await render({ url });
+      const rendered = await render({ url, host })
 
-      const html = template
-        .replace(`<!--app-head-->`, rendered.head ?? '')
-        .replace(`<!--app-html-->`, `
+      const html = template.replace(`<!--app-head-->`, rendered.head ?? '').replace(
+        `<!--app-html-->`,
+        `
           ${rendered.html ?? ''}
           <script type="text/javascript">
-            window.VITE_BASE_URL = '${req.protocol}://${req.hostname}';
+            window.VITE_BASE_URL = '${host}';
           </script>
-        `);
+        `
+      )
 
-      res.code(200).type('text/html').send(html);
+      res.code(200).type('text/html').send(html)
     } catch (e) {
       if (e instanceof Error) {
-        vite?.ssrFixStacktrace(e);
-        console.log(e.stack);
-        res.code(500).send(e.stack);
+        vite?.ssrFixStacktrace(e)
+        console.log(e.stack)
+        res.code(500).send(e.stack)
       }
     }
-  });
+  })
 }
 
 export const createDevServer = async ({
@@ -78,59 +80,54 @@ export const createDevServer = async ({
   apiEnabled = false,
   apiCwd,
   apiFilePattern,
-  middleware = false,
+  middleware = false
 }: CreateDevServerParams) => {
   // Api scanner and watcher
-  let tmpBuildDir = join(process.cwd(), 'dist', '.apis');
+  let tmpBuildDir = join(process.cwd(), 'dist', '.apis')
   let server = await restartable(
     async (fastify, opts) => {
-      const server = fastify(opts);
+      const server = fastify(opts)
 
-      await server.register(FastifyListRoutes, { colors: true });
-      await server.register(FastifyMiddie);
-      await server.register(FastifyCors, { origin: '*', methods: '*' });
-      if (registerVite) await server.register(createViteMiddleware, { base, index, entryServer, configFile });
+      await server.register(FastifyListRoutes, { colors: true })
+      await server.register(FastifyMiddie)
+      await server.register(FastifyCors, { origin: '*', methods: '*' })
+      if (registerVite) await server.register(createViteMiddleware, { base, index, entryServer, configFile })
 
       if (!!apiEnabled) {
-        let apiPaths = globSync(apiFilePattern, { cwd: apiCwd });
+        let apiPaths = globSync(apiFilePattern, { cwd: apiCwd })
         for (let apiPath of apiPaths) {
-          let apiFile = join(apiCwd, apiPath);
-          let apiJsPath = apiPath.replace('ts', 'js');
-          let apiJsFile = join(tmpBuildDir, apiJsPath);
+          let apiFile = join(apiCwd, apiPath)
+          let apiJsPath = apiPath.replace('ts', 'js')
+          let apiJsFile = join(tmpBuildDir, apiJsPath)
           await esbuild({
             format: 'esm',
             platform: 'node',
             entryPoints: [apiFile],
-            outfile: apiJsFile,
-          });
+            outfile: apiJsFile
+          })
 
-          let fn = await import(apiJsFile);
+          let fn = await import(apiJsFile)
           let path = [
             '',
             'api',
             ...apiPath
               .split('/')
-              .filter(
-                (p) =>
-                  !['api.ts', 'api.js', 'api', 'index.ts', 'index.js'].includes(
-                    p
-                  )
-              )
-              .filter((p) => !!p),
-          ].join('/');
-          server.register(fn?.default, { path });
+              .filter(p => !['api.ts', 'api.js', 'api', 'index.ts', 'index.js'].includes(p))
+              .filter(p => !!p)
+          ].join('/')
+          server.register(fn?.default, { path })
         }
       }
 
-      return server;
+      return server
     },
     { logger: true }
-  );
+  )
 
   if (!middleware) {
-    let address = await server.listen({ host: host, port: port });
-    console.log('Fastivite dev server is listening at', address);
+    let address = await server.listen({ host: host, port: port })
+    console.log('Fastivite dev server is listening at', address)
   }
 
-  return server;
-};
+  return server
+}

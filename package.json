@@ -12,10 +12,13 @@
   "scripts": {
     "build:core": "pnpm --filter=core build && pnpm --filter=core postbuild",
     "build:graphql": "pnpm --filter=graphql build && pnpm --filter=graphql postbuild",
-    "build": "concurrently npm:build:core && concurrently npm:build:graphql"
+    "build": "concurrently npm:build:core && concurrently npm:build:graphql",
+    "pretty": "prettier . --write"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "prettier": "^3.3.1",
+    "prettier-plugin-organize-imports": "^3.2.4",
     "typescript": "^5.4.5"
   }
 }

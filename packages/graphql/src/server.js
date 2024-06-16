@@ -3,12 +3,16 @@ import FastifyMiddie from '@fastify/middie';
 import { fastify } from 'fastify';
 import FastifyListRoutes from 'fastify-print-routes';
 import { readFileSync } from 'fs';
+import _ from 'lodash';
 import trimEnd from 'lodash/trimEnd.js';
 import trimStart from 'lodash/trimStart.js';
 import mercurius from 'mercurius';
 import { dirname, join } from 'path';
 import sirv from 'sirv';
 import { fileURLToPath } from 'url';
+import contextPaths from './contexts.json';
+import loaderPaths from './loaders.json';
+import resolverPaths from './resolvers.json';
 import { render } from './server/entry-server.js';
 
 const host = process.env.HOST || '127.0.0.1';
@@ -28,9 +32,36 @@ async function main() {
   await server.register(FastifyMiddie);
   await server.register(FastifyCors, { origin: '*', methods: '*' });
 
+  let resolvers = {};
+  for (let resolverPath of resolverPaths) {
+    let resolver = await import(`./${resolverPath}.js`);
+    resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
+  }
+
+  let loaders = {};
+  for (let loaderPath of loaderPaths) {
+    let loader = await import(`./${loaderPath}.js`);
+    loaders = _.defaultsDeep(loaders, loader?.default || {});
+  }
+
+  let contexts = [];
+  for (let contextPath of contextPaths) {
+    let context = await import(`./${contextPath}.js`);
+    contexts = [...contexts, context?.default || (async (req, rep) => ({}))];
+  }
+
   await server.register(mercurius, {
     schema: readFileSync(join(_dirname, 'schema.gql'), 'utf-8'),
-    resolvers: {},
+    resolvers: resolvers,
+    loaders: loaders,
+    context: async (req, rep) => {
+      let context = {};
+      for (let c of contexts) {
+        let ctx = await c(req, rep);
+        context = { ...context, ...ctx };
+      }
+      return context;
+    },
   });
 
   server.use(base, sirv(join(_dirname, 'client'), { extensions: [] }));

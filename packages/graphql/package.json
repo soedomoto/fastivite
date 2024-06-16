@@ -42,7 +42,9 @@
   },
   "dependencies": {
     "@graphql-codegen/cli": "^5.0.2",
-    "@fastivite/core": "^1.0.16",
+    "@graphql-codegen/client-preset": "^4.3.0",
+    "@fastivite/core": "^1.0.17",
+    "@parcel/watcher": "^2.4.1",
     "commander": "^12.1.0",
     "esbuild": "^0.21.5",
     "glob": "^10.4.1",

@@ -1,8 +1,8 @@
 #! /usr/bin/env node
 
 import { program } from 'commander';
-import { createGraphqlDevServer } from './dev.js';
 import { buildGraphqlServer } from './build.js';
+import { createGraphqlDevServer } from './dev.js';
 import { previewGraphqlServer } from './preview.js';
 
 (async () => {
