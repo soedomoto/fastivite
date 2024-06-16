@@ -1,6 +1,6 @@
 {
   "name": "@fastivite/graphql",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "author": "Soedomoto <soedomoto@gmail.com>",
   "description": "Create monolithic app made easy by using combination of fastify + mercurius + mercurius-codegen and vite + graphql-codegen",
   "type": "module",
