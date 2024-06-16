@@ -51,7 +51,7 @@ jobs:
           NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
-          
+
       ## graphql
       - name: Publish GraphQL to NPM
         uses: JS-DevTools/npm-publish@v3
