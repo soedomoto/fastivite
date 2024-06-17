@@ -32,6 +32,18 @@ async function main() {
   await server.register(FastifyMiddie);
   await server.register(FastifyCors, { origin: '*', methods: '*' });
 
+  try {
+    const { default: prismaClient } = await import('./prisma-client.js');
+
+    server.decorate("prisma", prismaClient);
+    server.addHook('onRequest', async (req) => {
+      // @ts-ignore
+      req.prisma = server.prisma;
+    });
+  } catch (err) {
+    console.log(`No prisma client is bundled`)
+  }
+
   let resolvers = {};
   for (let resolverPath of resolverPaths) {
     let resolver = await import(`./${resolverPath}.js`);

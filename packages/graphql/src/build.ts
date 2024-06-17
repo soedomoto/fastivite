@@ -28,6 +28,16 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
   // Build vite
   await buildVite(params);
 
+  // Build prisma client
+  if (!!params?.prismaClientFile) {
+    await esbuild({
+      format: 'esm',
+      platform: 'node',
+      entryPoints: [params?.prismaClientFile],
+      outfile: `${params?.outDir}/prisma-client.js`
+    })
+  }
+
   // Build graphql server
   // == Schema
   let graphqlSchemaPatterns: string[] = [];

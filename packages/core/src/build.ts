@@ -13,7 +13,8 @@ export type BuildViteParams = {
 
 export type BuildServerParams = BuildViteParams & {
   apiCwd: string
-  apiFilePattern: string | string[]
+  apiFilePattern: string | string[],
+  prismaClientFile?: string | undefined
 }
 
 let _filename = ''
@@ -28,9 +29,19 @@ export const buildVite = async ({ outDir, entryServer, configFile }: BuildVitePa
   await build({ build: { ssr: entryServer, outDir: `${outDir}/server` }, configFile })
 }
 
-export const buildServer = async ({ outDir, entryServer, apiCwd, apiFilePattern }: BuildServerParams) => {
+export const buildServer = async ({ outDir, entryServer, apiCwd, apiFilePattern, prismaClientFile }: BuildServerParams) => {
   // Build vite app
   await buildVite({ outDir, entryServer })
+
+  // Build prisma client
+  if (!!prismaClientFile) {
+    await esbuild({
+      format: 'esm',
+      platform: 'node',
+      entryPoints: [prismaClientFile],
+      outfile: `${outDir}/prisma-client.js`
+    })
+  }
 
   // Scan apis file
   let apiPaths = globSync(apiFilePattern, { cwd: apiCwd })
