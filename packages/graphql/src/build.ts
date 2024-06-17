@@ -140,4 +140,10 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
 
   rmSync(tmpJs, { recursive: true, force: true });
   rmSync(`${params?.outDir}/server`, { recursive: true, force: true });
+  rmSync(`${params?.outDir}/resolvers.json`, { recursive: true, force: true });
+  rmSync(`${params?.outDir}/loaders.json`, { recursive: true, force: true });
+  rmSync(`${params?.outDir}/contexts.json`, { recursive: true, force: true });
+  rmSync(`${params?.outDir}/resolvers`, { recursive: true, force: true });
+  rmSync(`${params?.outDir}/loaders`, { recursive: true, force: true });
+  rmSync(`${params?.outDir}/contexts`, { recursive: true, force: true });
 };
