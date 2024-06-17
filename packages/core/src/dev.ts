@@ -25,6 +25,7 @@ export type CreateDevServerParams = CreateViteMiddlewareOptions & {
   apiFilePattern: string | string[]
   middleware?: boolean
   registerVite?: boolean
+  prismaClient?: any | undefined
 }
 
 export const createViteMiddleware = async (server: FastifyInstance, options: CreateViteMiddlewareOptions) => {
@@ -80,7 +81,8 @@ export const createDevServer = async ({
   apiEnabled = false,
   apiCwd,
   apiFilePattern,
-  middleware = false
+  middleware = false,
+  prismaClient
 }: CreateDevServerParams) => {
   // Api scanner and watcher
   let tmpBuildDir = join(process.cwd(), 'dist', '.apis')
@@ -91,6 +93,15 @@ export const createDevServer = async ({
       await server.register(FastifyListRoutes, { colors: true })
       await server.register(FastifyMiddie)
       await server.register(FastifyCors, { origin: '*', methods: '*' })
+
+      if (!!prismaClient) {
+        server.decorate("prisma", prismaClient);
+        server.addHook('onRequest', async (req) => {
+          // @ts-ignore
+          req.prisma = prismaClient;
+        });
+      }
+
       if (registerVite) await server.register(createViteMiddleware, { base, index, entryServer, configFile })
 
       if (!!apiEnabled) {

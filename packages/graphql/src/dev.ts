@@ -46,6 +46,7 @@ export const createGraphqlDevServer = async ({
   graphqlOperationCodegenConfigFile,
   graphqlCodegenOut,
   middleware = false,
+  prismaClient,
 }: CreateGraphqlDevServerParams) => {
   apiCwd = join(process.cwd(), apiCwd);
   graphqlSchemaCwd = join(process.cwd(), graphqlSchemaCwd);
@@ -65,6 +66,7 @@ export const createGraphqlDevServer = async ({
     apiCwd,
     apiFilePattern,
     middleware: true,
+    prismaClient,
   });
 
   let codegenMercuriusOptions = {

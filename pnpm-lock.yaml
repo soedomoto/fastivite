@@ -26,6 +26,9 @@ importers:
       '@apollo/client':
         specifier: ^3.10.4
         version: 3.10.5(@types/react@18.3.3)(graphql@16.8.2)(react-dom@18.3.1)(react@18.3.1)
+      '@prisma/client':
+        specifier: 5.15.0
+        version: 5.15.0(prisma@5.15.0)
       '@radix-ui/react-slot':
         specifier: ^1.0.2
         version: 1.0.2(@types/react@18.3.3)(react@18.3.1)
@@ -55,10 +58,10 @@ importers:
         specifier: ^8.3.1
         version: 8.3.1
       '@fastivite/core':
-        specifier: ^1.0.17
+        specifier: ^1.0.19
         version: link:../../packages/core
       '@fastivite/graphql':
-        specifier: ^1.0.16
+        specifier: ^1.0.23
         version: link:../../packages/graphql
       '@graphql-typed-document-node/core':
         specifier: ^3.2.0
@@ -126,6 +129,9 @@ importers:
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
+      prisma:
+        specifier: ^5.15.0
+        version: 5.15.0
       sirv:
         specifier: ^2.0.4
         version: 2.0.4
@@ -218,7 +224,7 @@ importers:
         specifier: ^8.3.1
         version: 8.3.1
       '@fastivite/core':
-        specifier: ^1.0.18
+        specifier: ^1.0.19
         version: link:../core
       '@graphql-codegen/cli':
         specifier: ^5.0.2
@@ -2701,6 +2707,46 @@ packages:
   /@polka/url@1.0.0-next.25:
     resolution: {integrity: sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==}
     dev: true
+
+  /@prisma/client@5.15.0(prisma@5.15.0):
+    resolution: {integrity: sha512-wPTeTjbd2Q0abOeffN7zCDCbkp9C9cF+e9HPiI64lmpehyq2TepgXE+sY7FXr7Rhbb21prLMnhXX27/E11V09w==}
+    engines: {node: '>=16.13'}
+    requiresBuild: true
+    peerDependencies:
+      prisma: '*'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
+    dependencies:
+      prisma: 5.15.0
+    dev: false
+
+  /@prisma/debug@5.15.0:
+    resolution: {integrity: sha512-QpEAOjieLPc/4sMny/WrWqtpIAmBYsgqwWlWwIctqZO0AbhQ9QcT6x2Ut3ojbDo/pFRCCA1Z1+xm2MUy7fAkZA==}
+
+  /@prisma/engines-version@5.15.0-29.12e25d8d06f6ea5a0252864dd9a03b1bb51f3022:
+    resolution: {integrity: sha512-3BEgZ41Qb4oWHz9kZNofToRvNeS4LZYaT9pienR1gWkjhky6t6K1NyeWNBkqSj2llgraUNbgMOCQPY4f7Qp5wA==}
+
+  /@prisma/engines@5.15.0:
+    resolution: {integrity: sha512-hXL5Sn9hh/ZpRKWiyPA5GbvF3laqBHKt6Vo70hYqqOhh5e0ZXDzHcdmxNvOefEFeqxra2DMz2hNbFoPvqrVe1w==}
+    requiresBuild: true
+    dependencies:
+      '@prisma/debug': 5.15.0
+      '@prisma/engines-version': 5.15.0-29.12e25d8d06f6ea5a0252864dd9a03b1bb51f3022
+      '@prisma/fetch-engine': 5.15.0
+      '@prisma/get-platform': 5.15.0
+
+  /@prisma/fetch-engine@5.15.0:
+    resolution: {integrity: sha512-z6AY5yyXxc20Klj7wwnfGP0iIUkVKzybqapT02zLYR/nf9ynaeN8bq73WRmi1TkLYn+DJ5Qy+JGu7hBf1pE78A==}
+    dependencies:
+      '@prisma/debug': 5.15.0
+      '@prisma/engines-version': 5.15.0-29.12e25d8d06f6ea5a0252864dd9a03b1bb51f3022
+      '@prisma/get-platform': 5.15.0
+
+  /@prisma/get-platform@5.15.0:
+    resolution: {integrity: sha512-1GULDkW4+/VQb73vihxCBSc4Chc2x88MA+O40tcZFjmBzG4/fF44PaXFxUqKSFltxU9L9GIMLhh0Gfkk/pUbtg==}
+    dependencies:
+      '@prisma/debug': 5.15.0
 
   /@radix-ui/react-compose-refs@1.0.1(@types/react@18.3.3)(react@18.3.1):
     resolution: {integrity: sha512-fDSBgd44FKHa1FRMU59qBMPFcl2PZE+2nmqunj+BWFyYYjnhIDWL2ItDs3rrbJDQOtzt5nIebLCQc4QRfz6LJw==}
@@ -7281,6 +7327,14 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
     dev: true
+
+  /prisma@5.15.0:
+    resolution: {integrity: sha512-JA81ACQSCi3a7NUOgonOIkdx8PAVkO+HbUOxmd00Yb8DgIIEpr2V9+Qe/j6MLxIgWtE/OtVQ54rVjfYRbZsCfw==}
+    engines: {node: '>=16.13'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@prisma/engines': 5.15.0
 
   /process-warning@3.0.0:
     resolution: {integrity: sha512-mqn0kFRl0EoqhnL0GQ0veqFHyIN1yig9RHh/InzORTUiZHFRAur+aMtRkELNwGs9aNwKS6tg/An4NYBPGwvtzQ==}
