@@ -13,7 +13,7 @@ export type BuildViteParams = {
 
 export type BuildServerParams = BuildViteParams & {
   apiCwd: string
-  apiFilePattern: string | string[],
+  apiFilePattern: string | string[]
   prismaClientFile?: string | undefined
 }
 
@@ -29,7 +29,13 @@ export const buildVite = async ({ outDir, entryServer, configFile }: BuildVitePa
   await build({ build: { ssr: entryServer, outDir: `${outDir}/server` }, configFile })
 }
 
-export const buildServer = async ({ outDir, entryServer, apiCwd, apiFilePattern, prismaClientFile }: BuildServerParams) => {
+export const buildServer = async ({
+  outDir,
+  entryServer,
+  apiCwd,
+  apiFilePattern,
+  prismaClientFile
+}: BuildServerParams) => {
   // Build vite app
   await buildVite({ outDir, entryServer })
 

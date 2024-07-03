@@ -9,6 +9,7 @@ import { globSync } from 'glob'
 import _ from 'lodash'
 import { join } from 'path'
 import { createServer } from 'vite'
+import { pathToFileURL } from 'url'
 
 export type CreateViteMiddlewareOptions = {
   base?: string | undefined
@@ -97,13 +98,13 @@ export const createDevServer = async ({
       await server.register(FastifyCors, { origin: '*', methods: '*' })
 
       if (!!prismaClientFile) {
-        const { default: prismaClient } = await import(prismaClientFile);
+        const { default: prismaClient } = await import(pathToFileURL(prismaClientFile).toString())
 
-        server.decorate("prisma", prismaClient);
-        server.addHook('onRequest', async (req) => {
+        server.decorate('prisma', prismaClient)
+        server.addHook('onRequest', async req => {
           // @ts-ignore
-          req.prisma = server.prisma;
-        });
+          req.prisma = server.prisma
+        })
       }
 
       if (registerVite) await server.register(createViteMiddleware, { base, index, entryServer, configFile })
@@ -121,7 +122,7 @@ export const createDevServer = async ({
             outfile: apiJsFile
           })
 
-          let fn = await import(apiJsFile)
+          let fn = await import(pathToFileURL(apiJsFile).toString())
           let path = [
             '',
             'api',

@@ -9,7 +9,7 @@ import trimStart from 'lodash/trimStart.js';
 import mercurius from 'mercurius';
 import { dirname, join } from 'path';
 import sirv from 'sirv';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import contextPaths from './contexts.json';
 import loaderPaths from './loaders.json';
 import resolverPaths from './resolvers.json';
@@ -33,32 +33,36 @@ async function main() {
   await server.register(FastifyCors, { origin: '*', methods: '*' });
 
   try {
-    const { default: prismaClient } = await import('./prisma-client.js');
+    const { default: prismaClient } = await import(
+      pathToFileURL('./prisma-client.js').toString()
+    );
 
-    server.decorate("prisma", prismaClient);
+    server.decorate('prisma', prismaClient);
     server.addHook('onRequest', async (req) => {
       // @ts-ignore
       req.prisma = server.prisma;
     });
   } catch (err) {
-    console.log(`No prisma client is bundled`)
+    console.log(`No prisma client is bundled`);
   }
 
   let resolvers = {};
   for (let resolverPath of resolverPaths) {
-    let resolver = await import(`./${resolverPath}.js`);
+    let resolver = await import(
+      pathToFileURL(`./${resolverPath}.js`).toString()
+    );
     resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
   }
 
   let loaders = {};
   for (let loaderPath of loaderPaths) {
-    let loader = await import(`./${loaderPath}.js`);
+    let loader = await import(pathToFileURL(`./${loaderPath}.js`).toString());
     loaders = _.defaultsDeep(loaders, loader?.default || {});
   }
 
   let contexts = [];
   for (let contextPath of contextPaths) {
-    let context = await import(`./${contextPath}.js`);
+    let context = await import(pathToFileURL(`./${contextPath}.js`).toString());
     contexts = [...contexts, context?.default || (async (req, rep) => ({}))];
   }
 

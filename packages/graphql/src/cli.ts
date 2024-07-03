@@ -71,11 +71,7 @@ import { previewGraphqlServer } from './preview.js';
       'graphql context pattern. e.g: **/*.context.js',
       ['**/*.context.ts', '**/*.context.js']
     )
-    .option(
-      '--graphql-codegen <graphql-codegen>',
-      'is codegen enabled',
-      true
-    )
+    .option('--graphql-codegen <graphql-codegen>', 'is codegen enabled', true)
     .option(
       '--graphql-codegen-out <graphql-codegen-out...>',
       'graphql-codegen-out. e.g: gen.ts',
@@ -91,19 +87,19 @@ import { previewGraphqlServer } from './preview.js';
       'graphql-operation-codegen-config-file',
       './codegen.js'
     )
-    
+
     .action((params) => {
       createGraphqlDevServer(params);
     });
 
-// graphqlSchemaCwd: string;
-// graphqlSchemaPattern: string | string[];
-// graphqlResolverCwd: string;
-// graphqlResolverPattern: string | string[];
-// graphqlLoaderCwd: string;
-// graphqlLoaderPattern: string | string[];
-// graphqlContextCwd: string;
-// graphqlContextPattern: string | string[];
+  // graphqlSchemaCwd: string;
+  // graphqlSchemaPattern: string | string[];
+  // graphqlResolverCwd: string;
+  // graphqlResolverPattern: string | string[];
+  // graphqlLoaderCwd: string;
+  // graphqlLoaderPattern: string | string[];
+  // graphqlContextCwd: string;
+  // graphqlContextPattern: string | string[];
 
   program
     .command('build')

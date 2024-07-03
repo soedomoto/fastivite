@@ -7,6 +7,7 @@ import _ from 'lodash';
 import mercurius from 'mercurius';
 import { codegenMercurius, loadSchemaFiles } from 'mercurius-codegen';
 import { join } from 'path';
+import { pathToFileURL } from 'url';
 
 export type CreateGraphqlDevServerParams = CreateDevServerParams & {
   graphqlSchemaCwd: string;
@@ -79,19 +80,20 @@ export const createGraphqlDevServer = async ({
   let resolverPaths = globSync(graphqlResolverPattern, {
     cwd: graphqlResolverCwd,
   })
-    .map(resolverPath => join(graphqlResolverCwd, resolverPath))
-    .map(resolverPath => resolverPath.replace('.js', '').replace('.ts', ''));
+    .map((resolverPath) => join(graphqlResolverCwd, resolverPath))
+    .map((resolverPath) => resolverPath.replace('.js', '').replace('.ts', ''));
 
   for (let resolverPath of resolverPaths) {
     let resolver = null;
     try {
-      resolver = await import(`${resolverPath}.ts`);
+      resolver = await import(pathToFileURL(`${resolverPath}.ts`).toString());
     } catch (err) {
       try {
-        resolver = await import(`${resolverPath}.js`);
-      } catch (err) { }
+        resolver = await import(pathToFileURL(`${resolverPath}.js`).toString());
+      } catch (err) {}
     }
-    if (resolver) resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
+    if (resolver)
+      resolvers = _.defaultsDeep(resolvers, resolver?.default || {});
   }
 
   // == Loader
@@ -99,17 +101,17 @@ export const createGraphqlDevServer = async ({
   let loaderPaths = globSync(graphqlLoaderPattern, {
     cwd: graphqlLoaderCwd,
   })
-    .map(loaderPath => join(graphqlLoaderCwd, loaderPath))
-    .map(loaderPath => loaderPath.replace('.js', '').replace('.ts', ''));
+    .map((loaderPath) => join(graphqlLoaderCwd, loaderPath))
+    .map((loaderPath) => loaderPath.replace('.js', '').replace('.ts', ''));
 
   for (let loaderPath of loaderPaths) {
     let loader = null;
     try {
-      loader = await import(`${loaderPath}.ts`);
+      loader = await import(pathToFileURL(`${loaderPath}.ts`).toString());
     } catch (err) {
       try {
-        loader = await import(`${loaderPath}.js`);
-      } catch (err) { }
+        loader = await import(pathToFileURL(`${loaderPath}.js`).toString());
+      } catch (err) {}
     }
     if (loader) loaders = _.defaultsDeep(loaders, loader?.default || {});
   }
@@ -118,22 +120,26 @@ export const createGraphqlDevServer = async ({
   let contextPaths = globSync(graphqlContextPattern, {
     cwd: graphqlContextCwd,
   })
-    .map(contextPath => join(graphqlContextCwd, contextPath))
-    .map(contextPath => contextPath.replace('.js', '').replace('.ts', ''));
+    .map((contextPath) => join(graphqlContextCwd, contextPath))
+    .map((contextPath) => contextPath.replace('.js', '').replace('.ts', ''));
 
   let contexts = await Promise.all(
-    contextPaths.map(async (contextPath) => {
-      let context = null;
-      try {
-        context = await import(`${contextPath}.ts`);
-      } catch (err) {
+    contextPaths
+      .map(async (contextPath) => {
+        let context = null;
         try {
-          context = await import(`${contextPath}.js`);
-        } catch (err) { }
-      }
-      if (context) return context?.default;
-      return null;
-    }).filter(context => !!context)
+          context = await import(pathToFileURL(`${contextPath}.ts`).toString());
+        } catch (err) {
+          try {
+            context = await import(
+              pathToFileURL(`${contextPath}.js`).toString()
+            );
+          } catch (err) {}
+        }
+        if (context) return context?.default;
+        return null;
+      })
+      .filter((context) => !!context)
   );
 
   let context = async (req: FastifyRequest, rep: FastifyReply) => {

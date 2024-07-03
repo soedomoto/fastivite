@@ -34,8 +34,8 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
       format: 'esm',
       platform: 'node',
       entryPoints: [params?.prismaClientFile],
-      outfile: `${params?.outDir}/prisma-client.js`
-    })
+      outfile: `${params?.outDir}/prisma-client.js`,
+    });
   }
 
   // Build graphql server
