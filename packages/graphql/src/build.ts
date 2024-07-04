@@ -48,8 +48,9 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
     strServerJs = strServerJs
       // Render prismaClient to server.js template
       .replace(`// import prismaClient;`, `import prismaClient from './prisma-client.js';`)
-      .replace(`
-        server.decorate('prisma', null);`, `server.decorate('prisma', prismaClient);
+      .replace(
+        `server.decorate('prisma', null);`, 
+        `server.decorate('prisma', prismaClient);
         server.addHook('onRequest', async (req)=>{
           // @ts-ignore
           req.prisma = server.prisma;
