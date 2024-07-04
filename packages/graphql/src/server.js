@@ -10,7 +10,7 @@ import { dirname, join } from 'path';
 import sirv from 'sirv';
 import { fileURLToPath } from 'url';
 import { render } from './server/entry-server.js';
-import _ from 'lodash';
+// import lodash;
 // import prismaClient;
 // import contextPaths;
 // import loaderPaths;

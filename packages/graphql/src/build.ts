@@ -29,6 +29,10 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
   let tmpJs = `${params?.outDir}/server.js`;
   let strServerJs = readFileSync(join(dirname(_filename), 'server.js')).toString();
 
+  strServerJs = strServerJs
+    // Render lodash to server.js template
+    .replace(`// import lodash;`, `import _ from 'lodash';`)
+
   // Build vite
   await buildVite(params);
 
