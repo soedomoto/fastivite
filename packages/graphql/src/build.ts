@@ -27,11 +27,13 @@ try {
 export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
   // Read server.js template
   let tmpJs = `${params?.outDir}/server.js`;
-  let strServerJs = readFileSync(join(dirname(_filename), 'server.js')).toString();
+  let strServerJs = readFileSync(
+    join(dirname(_filename), 'server.js')
+  ).toString();
 
   strServerJs = strServerJs
     // Render lodash to server.js template
-    .replace(`// import lodash;`, `import _ from 'lodash';`)
+    .replace(`// import lodash;`, `import _ from 'lodash';`);
 
   // Build vite
   await buildVite(params);
@@ -47,15 +49,19 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
 
     strServerJs = strServerJs
       // Render prismaClient to server.js template
-      .replace(`// import prismaClient;`, `import prismaClient from './prisma-client.js';`)
       .replace(
-        `server.decorate('prisma', null);`, 
+        `// import prismaClient;`,
+        `import prismaClient from './prisma-client.js';`
+      )
+      .replace(
+        `server.decorate('prisma', null);`,
         `server.decorate('prisma', prismaClient);
         server.addHook('onRequest', async (req)=>{
           // @ts-ignore
           req.prisma = server.prisma;
         });
-      `)
+      `
+      );
   }
 
   // Build graphql server
@@ -158,16 +164,43 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
   // Build fastify server
   strServerJs = strServerJs
     // Render schema.gql to server.js template
-    .replace(`readFileSync(join(_dirname, 'schema.gql'), 'utf-8')`, '`' + schema.join('\n\n') + '`')
+    .replace(
+      `readFileSync(join(_dirname, 'schema.gql'), 'utf-8')`,
+      '`' + schema.join('\n\n') + '`'
+    )
     // Render resolver to server.js template
-    .replace(`// import resolverPaths;`, resolverDistPaths.map((r, i) => `import resolver${i} from './${r}.js';`).join('\n'))
-    .replace(`let resolvers = {};`, `let resolvers = {};\n${resolverDistPaths.map((_, i) => `resolvers = _.defaultsDeep(resolvers, resolver${i});`).join('\n')}`)
+    .replace(
+      `// import resolverPaths;`,
+      resolverDistPaths
+        .map((r, i) => `import resolver${i} from './${r}.js';`)
+        .join('\n')
+    )
+    .replace(
+      `let resolvers = {};`,
+      `let resolvers = {};\n${resolverDistPaths.map((_, i) => `resolvers = _.defaultsDeep(resolvers, resolver${i});`).join('\n')}`
+    )
     // Render loader to server.js template
-    .replace(`// import loaderPaths;`, loaderDistPaths.map((r, i) => `import loader${i} from './${r}.js';`).join('\n'))
-    .replace(`let loaders = {};`, `let loaders = {};\n${loaderDistPaths.map((_, i) => `loaders = _.defaultsDeep(loaders, loader${i});`).join('\n')}`)
+    .replace(
+      `// import loaderPaths;`,
+      loaderDistPaths
+        .map((r, i) => `import loader${i} from './${r}.js';`)
+        .join('\n')
+    )
+    .replace(
+      `let loaders = {};`,
+      `let loaders = {};\n${loaderDistPaths.map((_, i) => `loaders = _.defaultsDeep(loaders, loader${i});`).join('\n')}`
+    )
     // Render context to server.js template
-    .replace(`// import contextPaths;`, contextDistPaths.map((r, i) => `import context${i} from './${r}.js';`).join('\n'))
-    .replace(`let contexts = [];`, `let contexts = [${contextDistPaths.map((_, i) => `context${i} || (async (req, rep)=>({})),`).join('\n')}];`);
+    .replace(
+      `// import contextPaths;`,
+      contextDistPaths
+        .map((r, i) => `import context${i} from './${r}.js';`)
+        .join('\n')
+    )
+    .replace(
+      `let contexts = [];`,
+      `let contexts = [${contextDistPaths.map((_, i) => `context${i} || (async (req, rep)=>({})),`).join('\n')}];`
+    );
 
   writeFileSync(tmpJs, strServerJs);
 
@@ -190,5 +223,8 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
   rmSync(`${params?.outDir}/loaders`, { recursive: true, force: true });
   rmSync(`${params?.outDir}/contexts`, { recursive: true, force: true });
   rmSync(`${params?.outDir}/schema.gql`, { recursive: true, force: true });
-  rmSync(`${params?.outDir}/prisma-client.js`, { recursive: true, force: true });
+  rmSync(`${params?.outDir}/prisma-client.js`, {
+    recursive: true,
+    force: true,
+  });
 };

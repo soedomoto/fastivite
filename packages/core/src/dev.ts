@@ -10,6 +10,7 @@ import _ from 'lodash'
 import { join } from 'path'
 import { createServer } from 'vite'
 import { pathToFileURL } from 'url'
+import { FastiviteRender } from './interface.js'
 
 export type CreateViteMiddlewareOptions = {
   base?: string | undefined
@@ -46,9 +47,9 @@ export const createViteMiddleware = async (server: FastifyInstance, options: Cre
 
       let template = readFileSync(options?.index, 'utf-8')
       template = await vite.transformIndexHtml(url, template)
-      let render = (await vite.ssrLoadModule(options?.entryServer)).render
+      let render: FastiviteRender = (await vite.ssrLoadModule(options?.entryServer)).render
 
-      const rendered = await render({ url, host })
+      const rendered = await render({ url, host, req, rep: res })
 
       const html = template.replace(`<!--app-head-->`, rendered.head ?? '').replace(
         `<!--app-html-->`,
