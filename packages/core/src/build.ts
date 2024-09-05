@@ -12,7 +12,7 @@ export type BuildViteParams = {
 }
 
 export type BuildServerParams = BuildViteParams & {
-  format: "cjs" | "esm",
+  format?: "cjs" | "esm",
   apiCwd: string
   apiFilePattern: string | string[]
   prismaClientFile?: string | undefined
