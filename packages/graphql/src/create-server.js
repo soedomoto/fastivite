@@ -90,4 +90,6 @@ export default async function createServer() {
       }
     }
   });
+
+  return server;
 }
