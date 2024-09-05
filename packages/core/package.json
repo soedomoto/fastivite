@@ -1,6 +1,6 @@
 {
   "name": "@fastivite/core",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "author": "Soedomoto <soedomoto@gmail.com>",
   "description": "Create monolithic app made easy by using combination of fastify and vite",
   "type": "module",
