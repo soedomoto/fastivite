@@ -26,7 +26,7 @@ try {
 
 export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
   // Read server.js template
-  let tmpJs = `${params?.outDir}/server.js`;
+  let tmpJs = `${params?.outDir}/server_${Math.floor(Math.random() * 100)}.js`;
   let strServerJs = readFileSync(
     join(dirname(_filename), 'server.js')
   ).toString();
