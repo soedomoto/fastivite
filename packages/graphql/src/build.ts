@@ -217,10 +217,10 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
   if ((params?.format || 'cjs') == 'esm') {
     const file = `${params?.outDir}/server.js`;
     const inp = readFileSync(file, 'utf-8');
-    const rx = /\b\("(_http_agent|_http_client|_http_common|_http_incoming|_http_outgoing|_http_server|_stream_duplex|_stream_passthrough|_stream_readable|_stream_transform|_stream_wrap|_stream_writable|_tls_common|_tls_wrap|assert|node:assert|async_hooks|node:async_hooks|buffer|bufferutil|child_process|cluster|console|constants|crypto|node:crypto|dgram|diagnostics_channel|dns|node:dns|domain|events|node:events|fs|node:fs|fs\/promises|node:fs\/promises|http|node:http|http2|node:http2|https|node:https|inspector|module|net|os|path|node:path|perf_hooks|process|node:process|punycode|querystring|node:querystring|readline|repl|stream|node:stream|stream\/web|string_decoder|sys|timers|tls|trace_events|tty|url|node:url|util|node:util|util\/types|v8|vm|wasi|worker_threads|zlib|node:zlib|node:diagnostics_channel|node:string_decoder|node:os)"\)/gm;
+    const rx = /(\w+)\("(_http_agent|_http_client|_http_common|_http_incoming|_http_outgoing|_http_server|_stream_duplex|_stream_passthrough|_stream_readable|_stream_transform|_stream_wrap|_stream_writable|_tls_common|_tls_wrap|assert|node:assert|async_hooks|node:async_hooks|buffer|bufferutil|child_process|cluster|console|constants|crypto|node:crypto|dgram|diagnostics_channel|dns|node:dns|domain|events|node:events|fs|node:fs|fs\/promises|node:fs\/promises|http|node:http|http2|node:http2|https|node:https|inspector|module|net|os|path|node:path|perf_hooks|process|node:process|punycode|querystring|node:querystring|readline|repl|stream|node:stream|stream\/web|string_decoder|sys|timers|tls|trace_events|tty|url|node:url|util|node:util|util\/types|v8|vm|wasi|worker_threads|zlib|node:zlib|node:diagnostics_channel|node:string_decoder|node:os)"\)/gm;
 
     const modules = new Map();
-    const out = inp.replace(rx, function (_req, mod) {
+    const out = inp.replace(rx, function (_req, _fn, mod) {
       const id = '__import_' + mod.replace('/', '_').replace(':', '_').toUpperCase();
       modules.set(mod, id);
       return id;
