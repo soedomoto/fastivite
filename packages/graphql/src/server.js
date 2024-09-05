@@ -26,7 +26,8 @@ try {
 } catch (err) {
   _dirname = __dirname;
 }
-async function main() {
+
+export default async function createServer() {
   const server = fastify({
     logger: true,
   });
@@ -61,12 +62,14 @@ async function main() {
       return context;
     },
   });
+
   server.use(
     base,
     sirv(join(_dirname, 'client'), {
       extensions: [],
     })
   );
+
   server.get('*', async (req, res) => {
     try {
       const url = trimEnd(trimStart(req.originalUrl, base), '/');
@@ -87,10 +90,16 @@ async function main() {
       }
     }
   });
+}
+
+async function main() {
+  const server = await createServer()
+
   const addr = await server.listen({
     host: host,
     port: parseInt(port),
   });
+
   console.log('Fastivite server is listening at', addr);
 }
 void main();
