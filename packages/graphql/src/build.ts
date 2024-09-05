@@ -25,15 +25,17 @@ try {
 }
 
 export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
-  // Read server.js template
-  let tmpJs = `${params?.outDir}/server_${Math.floor(Math.random() * 100)}.js`;
-  let strServerJs = readFileSync(
-    join(dirname(_filename), 'server.js')
-  ).toString();
+  // Read create-server.js and server.js template
+  let randomNumber = Math.floor(Math.random() * 100);
+  let tmpCreateServerJs = `${params?.outDir}/create-server_${randomNumber}.js`;
+  let strCreateServerJs = readFileSync(join(dirname(_filename), 'create-server.js')).toString();
+  let tmpServerJs = `${params?.outDir}/server_${randomNumber}.js`;
+  let strServerJs = readFileSync(join(dirname(_filename), 'server.js')).toString();
 
-  strServerJs = strServerJs
-    // Render lodash to server.js template
-    .replace(`// import lodash;`, `import _ from 'lodash';`);
+  strServerJs = strServerJs.replace(`./create-server`, `./create-server_${randomNumber}`);
+
+  // Render lodash to server.js template
+  strCreateServerJs = strCreateServerJs.replace(`// import lodash;`, `import _ from 'lodash';`);
 
   // Build vite
   await buildVite(params);
@@ -47,7 +49,7 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
       outfile: `${params?.outDir}/prisma-client.js`,
     });
 
-    strServerJs = strServerJs
+    strCreateServerJs = strCreateServerJs
       // Render prismaClient to server.js template
       .replace(
         `// import prismaClient;`,
@@ -162,7 +164,7 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
   );
 
   // Build fastify server
-  strServerJs = strServerJs
+  strCreateServerJs = strCreateServerJs
     // Render schema.gql to server.js template
     .replace(
       `readFileSync(join(_dirname, 'schema.gql'), 'utf-8')`,
@@ -202,45 +204,58 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
       `let contexts = [${contextDistPaths.map((_, i) => `context${i} || (async (req, rep)=>({})),`).join('\n')}];`
     );
 
-  writeFileSync(tmpJs, strServerJs);
+  writeFileSync(tmpCreateServerJs, strCreateServerJs);
+  writeFileSync(tmpServerJs, strServerJs);
 
-  await esbuild({
-    bundle: true,
-    minify: true,
-    external: ['vite', 'fsevents'],
-    format: params?.format || 'cjs',
-    platform: 'node',
-    entryPoints: [tmpJs],
-    outfile: `${params?.outDir}/server.${(params?.format || 'cjs') == 'cjs' ? 'cjs' : 'js'}`,
-  });
+  await Promise.all([
+    esbuild({
+      bundle: true,
+      minify: true,
+      external: ['vite', 'fsevents'],
+      format: params?.format || 'cjs',
+      platform: 'node',
+      entryPoints: [tmpCreateServerJs],
+      outfile: `${params?.outDir}/create-server.${(params?.format || 'cjs') == 'cjs' ? 'cjs' : 'js'}`,
+    }),
+    esbuild({
+      bundle: true,
+      minify: true,
+      external: ['vite', 'fsevents'],
+      format: params?.format || 'cjs',
+      platform: 'node',
+      entryPoints: [tmpServerJs],
+      outfile: `${params?.outDir}/server.${(params?.format || 'cjs') == 'cjs' ? 'cjs' : 'js'}`,
+    })
+  ]);
 
   if ((params?.format || 'cjs') == 'esm') {
-    const file = `${params?.outDir}/server.js`;
-    const inp = readFileSync(file, 'utf-8');
-    const rx = /(\w+)\("(_http_agent|_http_client|_http_common|_http_incoming|_http_outgoing|_http_server|_stream_duplex|_stream_passthrough|_stream_readable|_stream_transform|_stream_wrap|_stream_writable|_tls_common|_tls_wrap|assert|node:assert|async_hooks|node:async_hooks|buffer|bufferutil|child_process|cluster|console|constants|crypto|node:crypto|dgram|diagnostics_channel|dns|node:dns|domain|events|node:events|fs|node:fs|fs\/promises|node:fs\/promises|http|node:http|http2|node:http2|https|node:https|inspector|module|net|os|path|node:path|perf_hooks|process|node:process|punycode|querystring|node:querystring|readline|repl|stream|node:stream|stream\/web|string_decoder|sys|timers|tls|trace_events|tty|url|node:url|util|node:util|util\/types|v8|vm|wasi|worker_threads|zlib|node:zlib|node:diagnostics_channel|node:string_decoder|node:os)"\)/gm;
+    ['create-server', 'server'].forEach(f => {
+      const file = `${params?.outDir}/${f}.js`;
+      const inp = readFileSync(file, 'utf-8');
+      const rx = /(\w+)\("(_http_agent|_http_client|_http_common|_http_incoming|_http_outgoing|_http_server|_stream_duplex|_stream_passthrough|_stream_readable|_stream_transform|_stream_wrap|_stream_writable|_tls_common|_tls_wrap|assert|node:assert|async_hooks|node:async_hooks|buffer|bufferutil|child_process|cluster|console|constants|crypto|node:crypto|dgram|diagnostics_channel|dns|node:dns|domain|events|node:events|fs|node:fs|fs\/promises|node:fs\/promises|http|node:http|http2|node:http2|https|node:https|inspector|module|net|os|path|node:path|perf_hooks|process|node:process|punycode|querystring|node:querystring|readline|repl|stream|node:stream|stream\/web|string_decoder|sys|timers|tls|trace_events|tty|url|node:url|util|node:util|util\/types|v8|vm|wasi|worker_threads|zlib|node:zlib|node:diagnostics_channel|node:string_decoder|node:os)"\)/gm;
 
-    const modules = new Map();
-    const out = inp.replace(rx, function (_req, _fn, mod) {
-      const id = '__import_' + mod.replace('/', '_').replace(':', '_').toUpperCase();
-      modules.set(mod, id);
-      return id;
-    });
+      const modules = new Map();
+      const out = inp.replace(rx, function (_req, _fn, mod) {
+        const id = '__import_' + mod.replace('/', '_').replace(':', '_').toUpperCase();
+        modules.set(mod, id);
+        return id;
+      });
 
-    const parts = [];
-    modules.forEach(function (val, key) {
-      parts.push(`import ${val} from ${JSON.stringify(key)};\n`);
-    });
+      const parts = [];
+      modules.forEach(function (val, key) {
+        parts.push(`import ${val} from ${JSON.stringify(key)};\n`);
+      });
 
-    parts.push(`import __import__PATH from 'path';
+      parts.push(`import __import__PATH from 'path';
 import { fileURLToPath as __import__FILEURLTOPATH } from 'url';
 const __filename = __import__FILEURLTOPATH(import.meta.url);
 const __dirname = __import__PATH.dirname(__filename);\n`);
-    parts.push(`\n${out}`);
+      parts.push(`\n${out}`);
 
-    writeFileSync(file, parts.join(''))
+      writeFileSync(file, parts.join(''))
+    })
   }
 
-  rmSync(tmpJs, { recursive: true, force: true });
   rmSync(`${params?.outDir}/server`, { recursive: true, force: true });
   rmSync(`${params?.outDir}/resolvers.json`, { recursive: true, force: true });
   rmSync(`${params?.outDir}/loaders.json`, { recursive: true, force: true });
@@ -253,4 +268,6 @@ const __dirname = __import__PATH.dirname(__filename);\n`);
     recursive: true,
     force: true,
   });
+  rmSync(tmpCreateServerJs, { recursive: true, force: true });
+  rmSync(tmpServerJs, { recursive: true, force: true });
 };
