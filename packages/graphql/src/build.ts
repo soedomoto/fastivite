@@ -208,10 +208,10 @@ export const buildGraphqlServer = async (params: BuildGraphqlServerParams) => {
     bundle: true,
     minify: true,
     external: ['vite', 'fsevents'],
-    format: 'cjs',
+    format: params?.format || 'cjs',
     platform: 'node',
     entryPoints: [tmpJs],
-    outfile: `${params?.outDir}/server.cjs`,
+    outfile: `${params?.outDir}/server.${(params?.format || 'cjs') == 'cjs' ? 'cjs' : 'js'}`,
   });
 
   rmSync(tmpJs, { recursive: true, force: true });
