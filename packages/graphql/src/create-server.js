@@ -69,6 +69,8 @@ export default async function createServer() {
       dotfiles: false,
       maxAge: 31536000, // 1Y
       immutable: true,
+      gzip: true,
+      brotli: true,
       extensions: [],
     })
   );
