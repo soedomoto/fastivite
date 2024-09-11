@@ -1,5 +1,8 @@
 import createServer from "./create-server";
 
+const host = process.env.HOST || '127.0.0.1';
+const port = process.env.PORT || '5173';
+
 async function main() {
   const server = await createServer()
 

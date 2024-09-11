@@ -16,8 +16,6 @@ import { render } from './server/entry-server.js';
 // import loaderPaths;
 // import resolverPaths;
 
-const host = process.env.HOST || '127.0.0.1';
-const port = process.env.PORT || '5173';
 const base = process.env.BASE || '';
 
 let _dirname;
@@ -66,6 +64,11 @@ export default async function createServer() {
   server.use(
     base,
     sirv(join(_dirname, 'client'), {
+      dev: false,
+      etag: true,
+      dotfiles: false,
+      maxAge: 31536000, // 1Y
+      immutable: true,
       extensions: [],
     })
   );
